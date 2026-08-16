@@ -1,5 +1,5 @@
-const CACHE_NAME = 'jimbox-shell-v1';
-const SHELL_FILES = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE_NAME = 'jimbox-shell-v2';
+const SHELL_FILES = ['./index.html', './manifest.json', './icon-192-final.png', './icon-512-final.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
