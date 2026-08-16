@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jimbox-shell-v2';
+const CACHE_NAME = 'jimbox-shell-v3';
 const SHELL_FILES = ['./index.html', './manifest.json', './icon-192-final.png', './icon-512-final.png'];
 
 self.addEventListener('install', (event) => {
@@ -20,10 +20,14 @@ self.addEventListener('activate', (event) => {
 // Estrategia: intenta siempre la red primero (para no trabajar nunca con datos
 // desactualizados en una app que se guarda en la nube), y si no hay conexión,
 // sirve la última copia guardada del "cascarón" de la app para que al menos abra.
+// Importante: usamos {cache:'no-store'} para saltarnos también la caché normal
+// del navegador (no solo la del Service Worker) — sin esto, GitHub Pages puede
+// servir una copia guardada del archivo aunque el Service Worker "pida red",
+// y los cambios tardan en llegar a quien tiene la app instalada.
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, {cache: 'no-store'})
       .then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
