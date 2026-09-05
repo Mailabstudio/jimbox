@@ -386,6 +386,10 @@
   .task-pill.p-produccion{background:#fff;color:var(--ink);border:1.5px solid var(--ink);}
   .task-pill.p-compra{background:var(--gray-soft);color:var(--ink-soft);}
   .task-pill.p-inicio{background:var(--gray-soft);color:var(--ink-soft);}
+  .quick-badge{display:inline-block;margin-top:4px;font-size:10px;font-weight:800;color:#854f0b;background:#faeeda;padding:3px 9px;border-radius:20px;}
+  .quick-nav-badge{position:absolute;top:2px;right:calc(50% - 22px);background:#d85a30;color:#fff;font-size:10px;font-weight:800;min-width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1;}
+  #quick-task-mic-btn{border-radius:50%;}
+  #quick-task-mic-btn.recording{background:#fdecec;color:#d85a30;}
   .see-all-link{font-size:12.5px;font-weight:800;color:var(--ink);text-decoration:underline;text-underline-offset:2px;}
   .stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:center;box-shadow:0 3px 10px rgba(20,20,20,0.04);position:relative;overflow:hidden;}
   .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--border);}
@@ -731,6 +735,8 @@
   <symbol id="icon-alert-triangle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
   <symbol id="icon-euro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5.5a8 8 0 1 0 0 13"/><line x1="3" y1="10" x2="15" y2="10"/><line x1="3" y1="14" x2="13" y2="14"/></symbol>
   <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+  <symbol id="icon-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></symbol>
+  <symbol id="icon-square" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="5" y="5" width="14" height="14" rx="2"/></symbol>
 </svg>
 
 
@@ -831,6 +837,11 @@
       <div class="greeting" id="home-greeting">¡Hola! 👋</div>
       <div class="greeting-sub">Esto es lo que se cuece en el estudio</div>
 
+      <div class="today-production-card" id="today-tasks-card" style="display:none;">
+        <div class="today-production-title"><svg class="icon" style="width:15px;height:15px;"><use href="#icon-check-circle"></use></svg> Tareas pendientes de hoy</div>
+        <div id="today-tasks-list"></div>
+      </div>
+
       <div class="today-production-card">
         <div class="today-production-title"><svg class="icon" style="width:15px;height:15px;"><use href="#icon-clipboard"></use></svg> Producción de hoy</div>
         <div id="today-production-list"></div>
@@ -878,6 +889,7 @@
         <button type="button" class="chip active" data-mode="dia" onclick="setHomeTasksMode('dia')">Hoy</button>
         <button type="button" class="chip" data-mode="todas" onclick="setHomeTasksMode('todas')">Todas las pendientes</button>
         <button type="button" class="chip" data-mode="hechas" onclick="setHomeTasksMode('hechas')">Hechas</button>
+        <button type="button" class="chip" data-mode="rapidas" onclick="setHomeTasksMode('rapidas')">Rápidas sin completar</button>
       </div>
       <div id="home-tasks" style="margin-bottom:22px;"></div>
 
@@ -1306,7 +1318,7 @@
   <div class="fab-wrap"><button class="fab" onclick="fabAction()">+</button></div>
 
   <nav class="bottom-nav">
-    <button class="active" data-view="inicio" onclick="showView('inicio')"><svg class="icon nav-icon"><use href="#icon-calendar"></use></svg>Tareas</button>
+    <button class="active" data-view="inicio" onclick="showView('inicio')" style="position:relative;"><svg class="icon nav-icon"><use href="#icon-calendar"></use></svg>Tareas<span class="quick-nav-badge" id="quick-nav-badge" style="display:none;">0</span></button>
     <button data-view="taller" onclick="showView('taller')"><svg class="icon nav-icon"><use href="#icon-zap"></use></svg>Taller</button>
     <button data-view="pedidos-list" onclick="pedidosListReturnView = null; showView('pedidos-list')"><svg class="icon nav-icon"><use href="#icon-list"></use></svg>Pedidos</button>
     <button data-view="compras" onclick="showView('compras')"><svg class="icon nav-icon"><use href="#icon-cart"></use></svg>Compras</button>
@@ -1515,9 +1527,35 @@
       <button class="btn-secondary" style="justify-content:flex-start;display:flex;align-items:center;" onclick="closeModal('fab-choice-overlay'); openTaskModal();">
         <svg class="icon" style="width:15px;height:15px;margin-right:8px;"><use href="#icon-check-circle"></use></svg> Nueva tarea
       </button>
+      <button class="btn-secondary" style="justify-content:flex-start;display:flex;align-items:center;" onclick="closeModal('fab-choice-overlay'); openQuickTaskModal();">
+        <svg class="icon" style="width:15px;height:15px;margin-right:8px;"><use href="#icon-mic"></use></svg> Tarea rápida
+      </button>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" style="flex:none;width:100%;" onclick="closeModal('fab-choice-overlay')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: tarea rápida (texto o voz, sin cliente/fecha/prioridad) -->
+<div class="overlay" id="quick-task-overlay">
+  <div class="modal" style="padding-bottom:24px;">
+    <div class="row-between" style="margin-bottom:16px;">
+      <button type="button" class="back-btn" style="position:static;" onclick="closeQuickTaskModal()"><svg class="icon"><use href="#icon-arrow-left"></use></svg></button>
+      <h3 style="margin-bottom:0;">Tarea rápida</h3>
+      <span style="width:34px;"></span>
+    </div>
+    <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px;">Escribe o dicta, y guarda. Podrás añadir cliente y fecha más tarde.</p>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+      <input type="text" id="quick-task-title" placeholder="Ej. Llamar a proveedor de tela" style="flex:1;">
+      <button type="button" class="icon-btn" id="quick-task-mic-btn" onclick="toggleQuickTaskVoice()" title="Dictar por voz" style="flex-shrink:0;">
+        <svg class="icon" id="quick-task-mic-icon" style="width:18px;height:18px;"><use href="#icon-mic"></use></svg>
+      </button>
+    </div>
+    <div id="quick-task-listening" style="display:none;font-size:12px;color:var(--status-orange, #d85a30);margin-bottom:10px;">Escuchando… habla ahora</div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeQuickTaskModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveQuickTask()">Guardar</button>
     </div>
   </div>
 </div>
@@ -6198,6 +6236,101 @@ let taskAttachmentName = '';
 let taskAttachmentIsImage = false;
 const taskStatusLabel = {pendiente:'Pendiente', 'en-curso':'En curso', bloqueada:'Bloqueada', hecha:'Hecha'};
 
+// ---------- TAREA RÁPIDA (texto o dictado por voz) ----------
+// Se guarda como una tarea normal más (mismo array freeTasks), sin cliente ni
+// fecha concretos (dueDate cae en "hoy" por defecto) y con quickIncomplete=true
+// hasta que alguien la abra y la guarde desde el formulario completo, momento
+// en el que se considera "completada con datos" y deja de avisar.
+let quickTaskRecognition = null;
+let quickTaskRecording = false;
+
+function openQuickTaskModal(){
+  document.getElementById('quick-task-title').value = '';
+  document.getElementById('quick-task-listening').style.display = 'none';
+  document.getElementById('quick-task-overlay').classList.add('active');
+}
+
+function closeQuickTaskModal(){
+  if(quickTaskRecording) stopQuickTaskVoice();
+  document.getElementById('quick-task-overlay').classList.remove('active');
+}
+
+function toggleQuickTaskVoice(){
+  if(quickTaskRecording){ stopQuickTaskVoice(); return; }
+  const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognitionCtor){
+    alert('Tu navegador no permite dictar por voz aquí. Escribe la tarea a mano.');
+    return;
+  }
+  quickTaskRecognition = new SpeechRecognitionCtor();
+  quickTaskRecognition.lang = 'es-ES';
+  quickTaskRecognition.continuous = true;
+  quickTaskRecognition.interimResults = true;
+  const input = document.getElementById('quick-task-title');
+  const baseText = input.value ? input.value.trim() + ' ' : '';
+  quickTaskRecognition.onresult = function(event){
+    let transcript = '';
+    for(let i = 0; i < event.results.length; i++){
+      transcript += event.results[i][0].transcript;
+    }
+    input.value = baseText + transcript;
+  };
+  quickTaskRecognition.onerror = function(){
+    stopQuickTaskVoice();
+  };
+  quickTaskRecognition.onend = function(){
+    quickTaskRecording = false;
+    document.getElementById('quick-task-mic-btn').classList.remove('recording');
+    document.getElementById('quick-task-listening').style.display = 'none';
+  };
+  quickTaskRecording = true;
+  document.getElementById('quick-task-mic-btn').classList.add('recording');
+  document.getElementById('quick-task-listening').style.display = 'block';
+  quickTaskRecognition.start();
+}
+
+function stopQuickTaskVoice(){
+  if(quickTaskRecognition){
+    try{ quickTaskRecognition.stop(); } catch(e){}
+  }
+  quickTaskRecording = false;
+  document.getElementById('quick-task-mic-btn').classList.remove('recording');
+  document.getElementById('quick-task-listening').style.display = 'none';
+}
+
+function saveQuickTask(){
+  const title = document.getElementById('quick-task-title').value.trim();
+  if(!title){ alert('Escribe o dicta un texto para la tarea.'); return; }
+  if(quickTaskRecording) stopQuickTaskVoice();
+  freeTasks.push({
+    id: 't' + Date.now(),
+    createdAt: new Date().toISOString(),
+    title,
+    relatedOrderId: null,
+    client: '',
+    supplier: '',
+    type: '',
+    dueDate: getTodayStr(),
+    responsibleId: null,
+    priority: 'Normal',
+    time: '',
+    duration: '',
+    repeat: '',
+    status: 'pendiente',
+    reminder: false,
+    notes: '',
+    attachment: null,
+    attachmentName: '',
+    attachmentIsImage: false,
+    quick: true,
+    quickIncomplete: true
+  });
+  closeQuickTaskModal();
+  renderHome();
+  saveState();
+  showSaveCheck();
+}
+
 function toggleTaskClientDropdown(){
   const body = document.getElementById('task-client-dropdown-body');
   const chevron = document.getElementById('task-client-chevron');
@@ -6457,7 +6590,10 @@ function saveTask(){
     notes: document.getElementById('task-notes').value.trim(),
     attachment: taskAttachmentData || null,
     attachmentName: taskAttachmentName || '',
-    attachmentIsImage: taskAttachmentIsImage
+    attachmentIsImage: taskAttachmentIsImage,
+    // Al pasar por el formulario completo (aunque sea sin tocar nada) se
+    // considera revisada: si venía de la Tarea rápida, deja de avisar.
+    quickIncomplete: false
   };
 
   const existingTask = editingTaskId ? freeTasks.find(x => x.id === editingTaskId) : null;
@@ -6727,9 +6863,9 @@ function buildHomeTasks(){
     const pillClass = t.priority === 'Urgente' ? 'p-entrega-urgent' : (t.priority === 'Alta' ? 'p-produccion' : 'p-inicio');
     const photo = (t.attachmentIsImage && t.attachment) ? t.attachment : null;
     if(t.dueDate === selStr){
-      tasks.push({rank:1, dotClass:'', icon:'check-circle', title:t.title, sub, pillClass, pillLabel, photo, onclick:`openTaskModal('${t.id}')`});
+      tasks.push({rank:1, dotClass:'', icon:'check-circle', title:t.title, sub, pillClass, pillLabel, photo, quickIncomplete: !!t.quickIncomplete, onclick:`openTaskModal('${t.id}')`});
     } else if(viewingToday && t.dueDate && t.dueDate < todayStr){
-      tasks.push({rank:0, dotClass:'urgent', icon:'check-circle', title:`Atrasada: ${t.title}`, sub, pillClass:'p-entrega-urgent', pillLabel:'Atrasada', photo, onclick:`openTaskModal('${t.id}')`});
+      tasks.push({rank:0, dotClass:'urgent', icon:'check-circle', title:`Atrasada: ${t.title}`, sub, pillClass:'p-entrega-urgent', pillLabel:'Atrasada', photo, quickIncomplete: !!t.quickIncomplete, onclick:`openTaskModal('${t.id}')`});
     }
   });
 
@@ -6764,8 +6900,18 @@ function buildAllPendingTasks(){
       const pillLabel = overdue ? 'Atrasada' : (t.priority === 'Urgente' ? 'Urgente' : (t.priority === 'Alta' ? 'Alta' : 'Tarea'));
       const pillClass = overdue || t.priority === 'Urgente' ? 'p-entrega-urgent' : (t.priority === 'Alta' ? 'p-produccion' : 'p-inicio');
       const photo = (t.attachmentIsImage && t.attachment) ? t.attachment : null;
-      return {dotClass: overdue ? 'urgent' : '', icon:'check-circle', title:t.title, sub: subParts.join(' · '), pillClass, pillLabel, photo, onclick:`openTaskModal('${t.id}')`};
+      return {dotClass: overdue ? 'urgent' : '', icon:'check-circle', title:t.title, sub: subParts.join(' · '), pillClass, pillLabel, photo, quickIncomplete: !!t.quickIncomplete, onclick:`openTaskModal('${t.id}')`};
     });
+}
+
+// Solo las tareas rápidas creadas por voz/texto que todavía no se han
+// revisado desde el formulario completo — para que no se pierdan de vista
+// mezcladas con el resto.
+function buildQuickIncompleteTasks(){
+  return freeTasks
+    .filter(t => t.quickIncomplete && t.status !== 'hecha')
+    .sort((a,b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+    .map(t => ({dotClass:'', icon:'check-circle', title:t.title, sub: t.notes || 'Tarea rápida', pillClass:'p-inicio', pillLabel:'Tarea', quickIncomplete:true, onclick:`openTaskModal('${t.id}')`}));
 }
 
 function buildDoneTasks(){
@@ -6794,6 +6940,20 @@ function closePhotoLightbox(){
 
 function renderHomeTasks(){
   const box = document.getElementById('home-tasks');
+  if(homeTasksMode === 'rapidas'){
+    const tasks = buildQuickIncompleteTasks();
+    box.innerHTML = tasks.length === 0 ? `<div class="empty-state">${svgIcon('check-circle',22)}<br><br>No hay tareas rápidas sin completar</div>` : tasks.map(t => `
+      <div class="task-item" onclick="${t.onclick}">
+        <div class="task-dot ${t.dotClass}">${svgIcon(t.icon,17)}</div>
+        <div class="task-info">
+          <div class="task-title">${escapeHtml(t.title)}</div>
+          <div class="task-sub">${escapeHtml(t.sub)}</div>
+          <span class="quick-badge">Pendiente de completar</span>
+        </div>
+        <span class="task-pill ${t.pillClass}">${t.pillLabel}</span>
+      </div>`).join('');
+    return;
+  }
   if(homeTasksMode === 'todas'){
     const tasks = buildAllPendingTasks();
     box.innerHTML = tasks.length === 0 ? `<div class="empty-state">${svgIcon('check-circle',22)}<br><br>No hay tareas pendientes</div>` : tasks.map(t => `
@@ -6802,6 +6962,7 @@ function renderHomeTasks(){
         <div class="task-info">
           <div class="task-title">${escapeHtml(t.title)}</div>
           <div class="task-sub">${escapeHtml(t.sub)}</div>
+          ${t.quickIncomplete ? '<span class="quick-badge">Pendiente de completar</span>' : ''}
         </div>
         <span class="task-pill ${t.pillClass}">${t.pillLabel}</span>
       </div>`).join('');
@@ -6829,6 +6990,7 @@ function renderHomeTasks(){
       <div class="task-info">
         <div class="task-title">${escapeHtml(t.title)}</div>
         <div class="task-sub">${escapeHtml(t.sub)}</div>
+        ${t.quickIncomplete ? '<span class="quick-badge">Pendiente de completar</span>' : ''}
       </div>
       <span class="task-pill ${t.pillClass}">${t.pillLabel}</span>
     </div>`).join('');
@@ -6839,6 +7001,54 @@ function renderGreeting(){
   if(!box) return;
   const u = getCurrentUser();
   box.textContent = u ? `¡Hola, ${u.name}! 👋` : '¡Hola! 👋';
+}
+
+// Bloque de "Tareas pendientes de hoy" que sale ANTES de Producción de hoy,
+// para que las jefas vean lo primero de todo (incluidas las tareas rápidas
+// que aún no se han completado, sin importar la fecha) sin tener que ir a
+// buscarlo a otra pestaña.
+function renderTodayTasks(){
+  const card = document.getElementById('today-tasks-card');
+  const box = document.getElementById('today-tasks-list');
+  if(!card || !box) return;
+  const todayStr = getTodayStr();
+  const rows = [];
+  freeTasks.forEach(t => {
+    if(t.status === 'hecha') return;
+    if(t.quickIncomplete){
+      rows.push({id:t.id, title:t.title, quickIncomplete:true});
+    } else if(t.dueDate === todayStr){
+      rows.push({id:t.id, title:t.title, quickIncomplete:false});
+    }
+  });
+  if(rows.length === 0){
+    card.style.display = 'none';
+    box.innerHTML = '';
+    return;
+  }
+  card.style.display = '';
+  box.innerHTML = rows.map(r => `
+    <div class="today-production-item" onclick="openTaskModal('${r.id}')">
+      <div class="today-production-icon">${svgIcon('check-circle', 17)}</div>
+      <div>
+        <div class="today-production-text">${escapeHtml(r.title)}</div>
+        ${r.quickIncomplete ? '<span class="quick-badge">Pendiente de completar</span>' : ''}
+      </div>
+    </div>`).join('');
+}
+
+// Contador rojo junto a "Tareas" en el menú inferior: cuántas tareas rápidas
+// siguen sin cliente/fecha completados, para que no se pierdan de vista.
+function updateQuickNavBadge(){
+  const badge = document.getElementById('quick-nav-badge');
+  if(!badge) return;
+  const count = freeTasks.filter(t => t.quickIncomplete && t.status !== 'hecha').length;
+  if(count > 0){
+    badge.textContent = String(count);
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
 }
 
 function renderTodayProduction(){
@@ -6890,7 +7100,9 @@ function remainingItemQtyLabel(item){
 
 function renderHome(){
   renderGreeting();
+  renderTodayTasks();
   renderTodayProduction();
+  updateQuickNavBadge();
   document.getElementById('home-produccion').textContent = orders.filter(o=>o.status==='produccion').length;
   document.getElementById('home-pendientes').textContent = orders.filter(o=>o.status==='pendiente' || o.status==='listo').length;
   document.getElementById('home-completados').textContent = orders.filter(o=>o.status==='entregado').length;
