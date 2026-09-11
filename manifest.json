@@ -1,0 +1,38 @@
+{
+  "name": "JIMBOX",
+  "short_name": "JIMBOX",
+  "description": "JIMBOX — gestión de pedidos, compras, clientes y proveedores de mailab y reyfox.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#111214",
+  "theme_color": "#111214",
+  "icons": [
+    { "src": "icon-192-final.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512-final.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192-maskable-final.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512-maskable-final.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "gcm_sender_id": "103953800507",
+  "shortcuts": [
+    {
+      "name": "Nuevo pedido",
+      "short_name": "Pedido",
+      "url": "./index.html?accion=nuevo-pedido",
+      "icons": [{ "src": "icon-192-final.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Nueva tarea",
+      "short_name": "Tarea",
+      "url": "./index.html?accion=nueva-tarea",
+      "icons": [{ "src": "icon-192-final.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Tarea rápida",
+      "short_name": "T. rápida",
+      "url": "./index.html?accion=tarea-rapida",
+      "icons": [{ "src": "icon-192-final.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}
